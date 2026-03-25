@@ -1,10 +1,6 @@
 ﻿using ApiFinanceiro.DataContexts;
 using ApiFinanceiro.Dtos;
-using ApiFinanceiro.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 using ApiFinanceiro.Services;
 using ApiFinanceiro.Exceptions;
 
@@ -35,8 +31,6 @@ namespace ApiFinanceiro.Controllers
                 return Problem(e.Message);
 
             }
-
-
         }
 
         [HttpGet("{id}")]
@@ -47,9 +41,9 @@ namespace ApiFinanceiro.Controllers
                 var despesa = await _service.FindById(id);
                 return Ok(despesa);
             }
-            catch (NotFoundException e)
+            catch (ErrorServiceExcepion e)
             {
-                return NotFound(e.Message);
+                return e.ToAcationResult(this);
             }
             catch (Exception e)
             {
@@ -58,6 +52,7 @@ namespace ApiFinanceiro.Controllers
             }
 
         }
+
         [HttpPost()]
         public async Task<IActionResult> Create([FromBody] DespesaDto novaDespesa)
         {
@@ -73,10 +68,9 @@ namespace ApiFinanceiro.Controllers
             }
         }
 
-
         [HttpPut("{id}")]
 
-        public async Task<ActionResult> Update(int id, [FromBody] DespesaUpdateDto despesaDto)
+        public async Task<IActionResult> Update(int id, [FromBody] DespesaUpdateDto despesaDto)
         {
             try
             {
@@ -84,6 +78,10 @@ namespace ApiFinanceiro.Controllers
 
                 return Ok(despesa);
 
+            }
+            catch (ErrorServiceExcepion e)
+            {
+                return e.ToAcationResult(this);
             }
             catch (Exception e)
             {

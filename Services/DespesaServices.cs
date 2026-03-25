@@ -29,7 +29,6 @@ namespace ApiFinanceiro.Services
             }
 
         }
-
         public async Task<Despesa> FindById(int id)
         {
             try
@@ -37,7 +36,8 @@ namespace ApiFinanceiro.Services
                 var despesa = await _context.Despesas.FirstOrDefaultAsync(x => x.Id == id);
                 if (despesa is null)
                 {
-                    throw new NotFoundException($"Despesa #{id} não encontrada");
+                    throw new ErrorServiceExcepion($"Despesa #{id} não encontrada",
+                        c => c.NotFound(new { message = $"Despesa não encontrada" }));
                 }
 
                 return despesa;
@@ -80,6 +80,7 @@ namespace ApiFinanceiro.Services
             {
                 var despesa = await FindById(id);
 
+                var dataVencimento = new DateTime(despesa.DataVencimento.Year, despesa.DataVencimento.Month, despesa.DataVencimento.Day);
                 var dataPagamento = new DateTime(despesaDto.DataPagamento.Year, despesaDto.DataPagamento.Month, despesaDto.DataPagamento.Day);
 
                 despesa.Descricao = despesaDto.Descricao;
@@ -89,7 +90,14 @@ namespace ApiFinanceiro.Services
                 despesa.Situacao = despesaDto.Situacao;
                 despesa.DataPagamento = dataPagamento;
 
-                _context.Despesas.Update(despesa);
+                //TODO: adicionar data de emissão
+                if (dataPagamento < dataVencimento)
+                {
+                    throw new ErrorServiceExcepion($"É possível realizar o pagamento apenas no dia do vencimento.",
+                        c => c.BadRequest(new { message = $"É possível realizar o pagamento apenas no dia do vencimento." }));
+                }
+
+                    _context.Despesas.Update(despesa);
                 await _context.SaveChangesAsync();
 
                 return despesa;
