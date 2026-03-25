@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ApiFinanceiro.Dtos
 {
-    public class ReceitaDto
+    public class ReceitaUpdateDto
     {
         [Required(ErrorMessage = "O campo Descrição é obrigatório")]
         [MinLength(5, ErrorMessage = "Obrigatório mínimo de 5 caracteres")]
@@ -23,5 +23,7 @@ namespace ApiFinanceiro.Dtos
 
         [Required(ErrorMessage = "O campo Situação é obrigatório")]
         public required string Situacao { get; set; }
+
+        public DateTime? DataRecebimento { get; set; }
     }
 }

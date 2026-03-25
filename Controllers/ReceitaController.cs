@@ -1,11 +1,10 @@
-﻿using ApiFinanceiro.Dtos;
+using ApiFinanceiro.Dtos;
 using ApiFinanceiro.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiFinanceiro.Controllers
 {
-    [Route("receitas/")]
+    [Route("/receitas")]
     [ApiController]
     public class ReceitaController : ControllerBase
     {
@@ -14,23 +13,20 @@ namespace ApiFinanceiro.Controllers
             new Receita
             {
                 Descricao = "Salário",
-                Valor = 5000,
+                Valor = 3500,
                 Categoria = "Trabalho",
-                DataPrevisao = new DateOnly(2026, 03, 01),
-                DataRecebimento = new DateTime(2026, 03, 01),
-                Observacao = "",
-                Situacao = "Recebida"
+                DataPrevisao = new DateOnly(2026, 03, 10),
+                Situacao = "Recebido",
+                Observacao = "Salário mensal"
             },
             new Receita
             {
                 Descricao = "Freelance",
-                Valor = 1500,
+                Valor = 500,
                 Categoria = "Trabalho",
-                DataPrevisao = new DateOnly(2026, 03, 10),
-                DataRecebimento = new DateTime(2026, 03, 10),
-                Observacao = "",
-                Situacao = "Recebida"
-            }       
+                DataPrevisao = new DateOnly(2026, 03, 12),
+                Situacao = "Pendente"
+            }
         };
 
         [HttpGet()]
@@ -48,63 +44,56 @@ namespace ApiFinanceiro.Controllers
                 Valor = novaReceita.Valor,
                 Categoria = novaReceita.Categoria,
                 DataPrevisao = novaReceita.DataPrevisao,
-                DataRecebimento = null,
-                Observacao = "",
+                Observacao = novaReceita.Observacao,
                 Situacao = "Pendente"
             };
-            listaReceitas.Add(receita);
-            return CreatedAtAction(nameof(FindAll), receita);
 
+            listaReceitas.Add(receita);
+
+            return Created("", receita);
         }
 
         [HttpGet("{id}")]
         public ActionResult FindById(Guid id)
         {
             var receita = listaReceitas.FirstOrDefault(r => r.Id == id);
-            if (receita is null) {
+
+            if (receita is null)
                 return NotFound(new { mensagem = $"Receita #{id} não encontrada" });
-            }
+
             return Ok(receita);
         }
 
         [HttpPut("{id}")]
-        public ActionResult Update(Guid id, [FromBody] ReceitaDto receitaDto)
+        public ActionResult Update(Guid id, [FromBody] ReceitaUpdateDto receitaDto)
         {
-            var receita = listaReceitas.FirstOrDefault(d => d.Id == id);
+            var receita = listaReceitas.FirstOrDefault(r => r.Id == id);
 
             if (receita is null)
-            {
                 return NotFound(new { mensagem = $"Receita #{id} não encontrada" });
-            }
 
-            var dataRecebimento = new DateTime(receitaDto.DataRecebimento.Year, receitaDto.DataRecebimento.Month, receitaDto.DataRecebimento.Day);
-
-            receita.Categoria = receitaDto.Categoria;
             receita.Descricao = receitaDto.Descricao;
-            receita.Observacao = receitaDto.Observacao;
             receita.Valor = receitaDto.Valor;
+            receita.Categoria = receitaDto.Categoria;
             receita.DataPrevisao = receitaDto.DataPrevisao;
-            receita.DataRecebimento = dataRecebimento;
+            receita.Observacao = receitaDto.Observacao;
+            receita.Situacao = receitaDto.Situacao;
+            receita.DataRecebimento = receitaDto.DataRecebimento;
 
             return Ok(receita);
-
         }
 
         [HttpDelete("{id}")]
         public ActionResult Remove(Guid id)
         {
-            var receita = listaReceitas.FirstOrDefault(d => d.Id == id);
+            var receita = listaReceitas.FirstOrDefault(r => r.Id == id);
 
             if (receita is null)
-            {
                 return NotFound(new { mensagem = $"Receita #{id} não encontrada" });
-            }
 
             listaReceitas.Remove(receita);
 
             return NoContent();
         }
-
-
     }
 }

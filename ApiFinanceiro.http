@@ -1,6 +1,9 @@
-@ApiFinanceiro_HostAddress = http://localhost:5272
+@ApiFinanceiro_HostAddress = http://localhost:5003
 
-GET {{ApiFinanceiro_HostAddress}}/weatherforecast/
+GET {{ApiFinanceiro_HostAddress}}/
 Accept: application/json
 
 ###
+
+GET {{ApiFinanceiro_HostAddress}}/despesas
+Accept: application/json
