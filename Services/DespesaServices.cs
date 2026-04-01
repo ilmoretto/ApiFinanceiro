@@ -4,6 +4,7 @@ using ApiFinanceiro.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiFinanceiro.Exceptions;
+using AutoMapper;
 
 namespace ApiFinanceiro.Services
 {
@@ -11,9 +12,12 @@ namespace ApiFinanceiro.Services
     {
         private readonly AppDbContext _context;
 
-        public DespesaServices(AppDbContext context)
+        private readonly IMapper _mapper;
+
+        public DespesaServices(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<ICollection<Despesa>> FindAll()
@@ -50,18 +54,12 @@ namespace ApiFinanceiro.Services
             }
 
         }
-        public async Task<Despesa> Create(DespesaDto novaDespesa)
+        public async Task<Despesa> Create(DespesaDto data)
         {
             try
             {
-                var despesa = new Despesa
-                {
-                    Descricao = novaDespesa.Descricao,
-                    Valor = novaDespesa.Valor,
-                    Categoria = novaDespesa.Categoria,
-                    DataVencimento = novaDespesa.DataVencimento,
-                    Situacao = "Pendente"
-                };
+                var despesa = _mapper.Map<Despesa>(data); // Mapear o DTO para a entidade Despesa
+
                 await _context.Despesas.AddAsync(despesa);
                 await _context.SaveChangesAsync();
 
@@ -83,21 +81,16 @@ namespace ApiFinanceiro.Services
                 var dataVencimento = new DateTime(despesa.DataVencimento.Year, despesa.DataVencimento.Month, despesa.DataVencimento.Day);
                 var dataPagamento = new DateTime(despesaDto.DataPagamento.Year, despesaDto.DataPagamento.Month, despesaDto.DataPagamento.Day);
 
-                despesa.Descricao = despesaDto.Descricao;
-                despesa.Valor = despesaDto.Valor;
-                despesa.DataVencimento = despesaDto.DataVencimento;
-                despesa.Categoria = despesaDto.Categoria;
-                despesa.Situacao = despesaDto.Situacao;
-                despesa.DataPagamento = dataPagamento;
+                _mapper.Map(despesaDto, despesa);
 
                 //TODO: adicionar data de emissão
-                if (dataPagamento < dataVencimento)
-                {
-                    throw new ErrorServiceExcepion($"É possível realizar o pagamento apenas no dia do vencimento.",
-                        c => c.BadRequest(new { message = $"É possível realizar o pagamento apenas no dia do vencimento." }));
-                }
+                //if (dataPagamento < dataVencimento)
+                //{
+                //    throw new ErrorServiceExcepion($"É possível realizar o pagamento apenas no dia do vencimento.",
+                //        c => c.Conflict(new { message = $"É possível realizar o pagamento apenas no dia do vencimento." }));
+                //}
 
-                    _context.Despesas.Update(despesa);
+                _context.Despesas.Update(despesa);
                 await _context.SaveChangesAsync();
 
                 return despesa;

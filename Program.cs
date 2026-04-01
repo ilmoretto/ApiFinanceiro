@@ -1,6 +1,8 @@
 using ApiFinanceiro.DataContexts;
+using ApiFinanceiro.Profiles;
 using ApiFinanceiro.Services;
 using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<DespesaServices>(); // Injeção de dependência para a classe DespesaServices
+builder.Services.AddAutoMapper(config => config.AddProfile<DespesaProfile>()); // Configuração do AutoMapper para usar o perfil DespesaProfile
 
 var app = builder.Build();
 
