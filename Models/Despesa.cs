@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ApiFinanceiro.Models
 {
@@ -25,8 +26,9 @@ namespace ApiFinanceiro.Models
         [Column("situacao")]
         public required string Situacao { get; set; }
 
+        [JsonIgnore]
         [Column("categoria_id")]
-        public int CategoriaId { get; set; }
+        public int? CategoriaId { get; set; }
 
         public virtual Categoria? Categoria { get; set; }
 
