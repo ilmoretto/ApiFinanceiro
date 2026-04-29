@@ -1,8 +1,11 @@
 ﻿using ApiFinanceiro.DataContexts;
 using ApiFinanceiro.Dtos;
-using Microsoft.AspNetCore.Mvc;
-using ApiFinanceiro.Services;
 using ApiFinanceiro.Exceptions;
+using ApiFinanceiro.Models;
+using ApiFinanceiro.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiFinanceiro.Controllers
 {
@@ -10,12 +13,11 @@ namespace ApiFinanceiro.Controllers
     [ApiController]
     public class DespesaController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly DespesaServices _service;
-        public DespesaController(DespesaServices service, AppDbContext context)
+        private readonly DespesaService _service;
+
+        public DespesaController(DespesaService service)
         {
             _service = service;
-            _context = context;
         }
 
         [HttpGet()]
@@ -23,14 +25,15 @@ namespace ApiFinanceiro.Controllers
         {
             try
             {
-                var despesas = await _service.FindAll(); 
+                var despesas = await _service.FindAll();
+
                 return Ok(despesas);
             }
             catch (Exception e)
             {
                 return Problem(e.Message);
-
             }
+
         }
 
         [HttpGet("{id}")]
@@ -39,18 +42,17 @@ namespace ApiFinanceiro.Controllers
             try
             {
                 var despesa = await _service.FindById(id);
+
                 return Ok(despesa);
             }
-            catch (ErrorServiceExcepion e)
+            catch (ErrorServiceException e)
             {
-                return e.ToAcationResult(this);
+                return e.ToActionResult(this);
             }
             catch (Exception e)
             {
                 return Problem(e.Message);
-
             }
-
         }
 
         [HttpPost()]
@@ -66,10 +68,10 @@ namespace ApiFinanceiro.Controllers
             {
                 return Problem(e.Message);
             }
+
         }
 
         [HttpPut("{id}")]
-
         public async Task<IActionResult> Update(int id, [FromBody] DespesaUpdateDto despesaDto)
         {
             try
@@ -79,9 +81,23 @@ namespace ApiFinanceiro.Controllers
                 return Ok(despesa);
 
             }
-            catch (ErrorServiceExcepion e)
+            catch (ErrorServiceException e)
             {
-                return e.ToAcationResult(this);
+                return e.ToActionResult(this);
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpPost("{id}/tags")]
+        public async Task<IActionResult> AddTags(int id, [FromBody] DespesaTagsDto tag)
+        {
+            try
+            {
+                var despesa = await _service.AddTags(id, tag);
+                return Ok();
             }
             catch (Exception e)
             {
@@ -94,7 +110,7 @@ namespace ApiFinanceiro.Controllers
         {
             try
             {
-                var despesa = await _service.Remove(id);
+                await _service.Remove(id);
 
                 return NoContent();
             }
@@ -102,109 +118,6 @@ namespace ApiFinanceiro.Controllers
             {
                 return Problem(e.Message);
             }
-
         }
-
-
     }
-
-
 }
-
-
-//    private static List<Despesa> listaDespesas = new()
-//    {
-//        new Despesa {
-//            Descricao = "Internet",
-//            Valor = 150, Categoria = "Moradia",
-//            DataVencimento = new DateOnly(2026, 03, 15),
-//            Situacao = "Aberto"
-//        },
-//        new Despesa {
-//            Descricao = "Caerd",
-//            Valor = 45, Categoria = "Moradia",
-//            DataVencimento = new DateOnly(2026, 03, 10),
-//            Situacao = "Aberto"
-//        },
-//        new Despesa {
-//            Descricao = "Energisa",
-//            Valor = 245, Categoria = "Moradia",
-//            DataVencimento = new DateOnly(2026, 03, 09),
-//            Situacao = "Aberto"
-//        }
-//    };
-
-//    [HttpGet()]
-//    public ActionResult FindAll()
-//    {
-//        return Ok(listaDespesas);
-//    }
-
-//    [HttpPost()]
-//    public ActionResult Create([FromBody]DespesaDto novaDespesa)
-//    {
-//        var despesa = new Despesa
-//        {
-//            Descricao = novaDespesa.Descricao,
-//            Valor = novaDespesa.Valor,
-//            Categoria = novaDespesa.Categoria,
-//            DataVencimento = novaDespesa.DataVencimento,
-//            Situacao = "Pendente"
-//        };
-
-//        listaDespesas.Add(despesa);
-
-//        return Created("", despesa);
-//    }
-
-//    [HttpGet("{id}")]
-//    public ActionResult FindById(Guid id)
-//    {
-//        var despesa = listaDespesas.FirstOrDefault(d => d.Id == id);
-
-//        if (despesa is null)
-//        {
-//            return NotFound(new { mensagem = $"Despesa #{id} não encontrada" });
-//        }
-
-//        return Ok(despesa);
-//    }
-
-//    [HttpPut("{id}")]
-//    public ActionResult Update(Guid id, [FromBody] DespesaUpdateDto despesaDto)
-//    {
-//        var despesa = listaDespesas.FirstOrDefault(d => d.Id == id);
-
-//        if (despesa is null)
-//        {
-//            return NotFound(new { mensagem = $"Despesa #{id} não encontrada" });
-//        }
-
-//        var dataPagamento = new DateTime(despesaDto.DataPagamento.Year, despesaDto.DataPagamento.Month, despesaDto.DataPagamento.Day);
-
-//        despesa.Descricao = despesaDto.Descricao;
-//        despesa.Valor = despesaDto.Valor;
-//        despesa.DataVencimento = despesaDto.DataVencimento;
-//        despesa.Categoria = despesaDto.Categoria;
-//        despesa.Situacao = despesaDto.Situacao;
-//        despesa.DataPagamento = dataPagamento;
-
-//        return Ok(despesa);
-//    }
-
-//    [HttpDelete("{id}")]
-//    public ActionResult Remove(Guid id)
-//    {
-//        var despesa = listaDespesas.FirstOrDefault(d => d.Id == id);
-
-//        if (despesa is null)
-//        {
-//            return NotFound(new { mensagem = $"Despesa #{id} não encontrada" });
-//        }
-
-//        listaDespesas.Remove(despesa);
-
-//        return NoContent();
-//    }
-//}
-

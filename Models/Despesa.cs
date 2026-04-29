@@ -4,12 +4,11 @@ using System.Text.Json.Serialization;
 
 namespace ApiFinanceiro.Models
 {
-    [Table("despesas"),PrimaryKey(nameof(Id))]
+    [Table("despesas"), PrimaryKey(nameof(Id))]
     public class Despesa
     {
-
         [Column("id")]
-        public  int Id { get; set; }
+        public int Id { get; set; }
 
         [Column("descricao")]
         public required string Descricao { get; set; }
@@ -20,18 +19,17 @@ namespace ApiFinanceiro.Models
         [Column("data_vencimento")]
         public required DateOnly DataVencimento { get; set; }
 
-        [Column("data_pagamento")]
-        public DateTime? DataPagamento { get; set; }
-
         [Column("situacao")]
         public required string Situacao { get; set; }
 
-        [JsonIgnore]
+        [Column("data_pagamento")]
+        public DateTime? DataPagamento { get; set; }
+
         [Column("categoria_id")]
         public int? CategoriaId { get; set; }
 
         public virtual Categoria? Categoria { get; set; }
 
-
+        public ICollection<Tag>? Tags { get; set; } = new List<Tag>();
     }
 }

@@ -25,7 +25,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<DespesaServices>(); // Injeção de dependência para a classe DespesaServices
+builder.Services.AddScoped<DespesaService>(); // Injeção de dependência para a classe DespesaService
 builder.Services.AddAutoMapper(config => config.AddProfile<DespesaProfile>()); // Configuração do AutoMapper para usar o perfil DespesaProfile
 
 var app = builder.Build();
@@ -42,3 +42,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
