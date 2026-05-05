@@ -97,7 +97,8 @@ namespace ApiFinanceiro.Controllers
             try
             {
                 var despesa = await _service.AddTags(id, tag);
-                return Ok();
+
+                return Ok(despesa);
             }
             catch (Exception e)
             {

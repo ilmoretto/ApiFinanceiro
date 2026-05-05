@@ -26,25 +26,15 @@ namespace ApiFinanceiro.Services
         {
             try
             {
-                var list = await _context.Despesas
-                    .Include(d => d.Categoria)
-                    .Include(d => d.Tags)
-                    
-                    .ToListAsync();
-
-                /**
-                 * Mapper filtra a lista de despesa e retorna somente os
-                 * atributos que esestão em DespesaRsponseDto
-                 */
-
-                return _mapper.Map<ICollection<DespesaResponseDto>>(list);
-
-                /**
-                 * Melhor uso, na SQL faz o SELECT somente das colunas adicionadas do DespesaResponseDTO
-                 */
-                //return await _context.Despesas
-                //    .ProjectTo<DespesaResponseDto>(_mapper.ConfigurationProvider)
+                //var list = await _context.Despesas
+                //    .Include(d => d.Categoria)
                 //    .ToListAsync();
+
+                //return _mapper.Map<ICollection<DespesaResponseDto>>(list);
+
+                return await _context.Despesas
+                    .ProjectTo<DespesaResponseDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
             }
             catch (Exception)
             {
@@ -82,7 +72,7 @@ namespace ApiFinanceiro.Services
         {
             try
             {
-                var despesa = await _context.Despesas.FirstOrDefaultAsync(x => x.Id == id);
+                var despesa = await _context.Despesas.Include(d => d.Tags).FirstOrDefaultAsync(x => x.Id == id);
 
                 if (despesa is null)
                 {
@@ -135,8 +125,9 @@ namespace ApiFinanceiro.Services
                 throw;
             }
         }
+
         public async Task<Despesa> AddTags(int id, DespesaTagsDto tag)
-        {//adicionar include de tags para buscar as tags já associadas a despesa e não adicionar novamente
+        {
             try
             {
                 var despesa = await FindById(id);
@@ -145,19 +136,21 @@ namespace ApiFinanceiro.Services
 
                 if (tags.Count == 0)
                 {
-                    throw new ErrorServiceException($"Tags não encontradas",
-                        c => c.NotFound(new { message = $"Tags não encontradas" }));
+                    throw new ErrorServiceException($"Tags não encontrada",
+                        c => c.NotFound(new { message = $"Tags não encontrada" }));
                 }
 
                 foreach (Tag _tag in tags)
                 {
                     if (despesa.Tags.Any(t => t.Id != _tag.Id))
+                    {
                         despesa.Tags.Add(_tag);
+                    }
                 }
+
                 await _context.SaveChangesAsync();
 
                 return despesa;
-
             }
             catch (Exception)
             {
@@ -179,6 +172,7 @@ namespace ApiFinanceiro.Services
                 throw;
             }
         }
+
 
     }
 }
