@@ -11,6 +11,7 @@ namespace ApiFinanceiro.DataContexts
 
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
